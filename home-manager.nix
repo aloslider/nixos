@@ -10,6 +10,7 @@
 		users.benq = { pkgs, ... }: {
 			home.packages = with pkgs; [
 				lazygit       
+				lazydocker
 			];
 			home.stateVersion = "25.05";
 		};
