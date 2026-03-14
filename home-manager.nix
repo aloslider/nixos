@@ -5,6 +5,9 @@
 	};
 
 	home-manager = {
+		imports = [
+			./modules/home
+		];
 		useGlobalPkgs = true;
 		useUserPackages = true;
 		users.benq = { pkgs, ... }: {
