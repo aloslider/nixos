@@ -1,0 +1,26 @@
+{ config, ... }:
+{
+  networking = {
+    hostName = "homelab";
+    networkmanager.enable = true;
+    useDHCP = false;
+    defaultGateway = "192.168.88.1";
+    nameservers = [
+      "192.168.88.1"
+    ];
+    interfaces.enp1s0 = {
+      ipv4.addresses = [
+        {
+          address = "192.168.88.5";
+          prefixLength = 24;
+        }
+      ];
+    };
+    firewall.allowedTCPPorts = [
+      22
+      80
+      443
+    ];
+    firewall.allowedUDPPorts = [ ];
+  };
+}

@@ -1,0 +1,8 @@
+keys:
+  - &users:
+    - &benq age1tl5hp6v0t38fl8gxuqds40z503mwz885ev22au4jdy5r24aak3zsza23sx
+creation_rules:
+  - path_regex: secrets.yaml$
+    key_group:
+      - age:
+        - *benq
