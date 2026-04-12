@@ -24,6 +24,6 @@
     ))
   ];
 
-  disko.cfg.mainDevice = "/dev/vda";
+  disko.cfg.mainDevice = "/dev/disk/by-id/ata-AMD_R5M120G8_07092225C0040";
 	system.stateVersion = "26.05";
 }

@@ -2,25 +2,28 @@
 {
   networking = {
     hostName = "homelab";
-    networkmanager.enable = true;
     useDHCP = false;
-    defaultGateway = "192.168.88.1";
-    nameservers = [
-      "192.168.88.1"
-    ];
-    interfaces.enp1s0 = {
-      ipv4.addresses = [
-        {
-          address = "192.168.88.5";
-          prefixLength = 24;
-        }
-      ];
+    networkmanager.enable = false;
+  };
+
+  systemd.network = {
+    enable = true;
+    networks."10-homelab-static-ip" = {
+      networkConfig = {
+        Address = "192.168.88.5/24";
+        Gateway = "192.168.88.1";
+        DNS = [ "192.168.88.1" ];
+      };
+      matchConfig.Name = "enp1s0";
+      linkConfig.RequiredForOnline = "routable";
+      firewall = {
+        allowedTCPPorts = [
+          22
+          80
+          443
+        ];
+        allowedUDPPorts = [ ];
+      };
     };
-    firewall.allowedTCPPorts = [
-      22
-      80
-      443
-    ];
-    firewall.allowedUDPPorts = [ ];
   };
 }

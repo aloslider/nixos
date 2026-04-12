@@ -6,15 +6,16 @@
 }:
 {
   imports = [
-    (modulesPath + "/profiles/qemu-guest.nix")
+    (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
   boot.initrd.availableKernelModules = [
     "ahci"
     "xhci_pci"
-    "virtio_pci"
-    "sr_mod"
-    "virtio_blk"
+    "nvme"
+    "usb_storage"
+    "usbhid"
+    "sd_mod"
   ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
@@ -22,7 +23,7 @@
 
   # hdd
   fileSystems."/mnt/data" = {
-    device = "/dev/disk/by-label/data";
+    device = "/dev/disk/by-id/ata-WDC_WD20EFPX-68C4TN0_WD-WX32DA423Z41";
     fsType = "ext4";
     options = [
       "noatime"
