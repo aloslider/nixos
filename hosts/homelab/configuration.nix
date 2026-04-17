@@ -11,7 +11,7 @@
     (map lib.custom.relativeToRoot (
       [
         "hosts/common/core"
-				"hosts/common/users/benq.nix"
+        "hosts/common/users/benq.nix"
         "home/benq/homelab.nix"
       ]
       ++ (map (f: "hosts/common/optional/${f}") [
@@ -25,5 +25,5 @@
   ];
 
   disko.cfg.mainDevice = "/dev/disk/by-id/ata-AMD_R5M120G8_07092225C0040";
-	system.stateVersion = "26.05";
+  system.stateVersion = "26.05";
 }

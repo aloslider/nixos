@@ -17,12 +17,20 @@
       { pkgs, ... }:
       {
         imports = lib.flatten [
-          ./packages.nix
-          (map (f: lib.custom.relativeToRoot "home/common/optional/${f}") [
-            "git.nix"
-          ])
+          (map lib.custom.relativeToRoot (
+            [
+              "home/benq/core"
+            ]
+            ++ (map (f: "home/benq/optional/${f}") [
+            ])
+          ))
         ];
 
+        home.packages = with pkgs; [
+          chezmoi
+          lazygit
+          lazydocker
+        ];
         home.stateVersion = "25.05";
       };
   };
