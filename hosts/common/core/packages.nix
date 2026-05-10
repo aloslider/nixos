@@ -1,8 +1,13 @@
 { congif, pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
+    age
+    bind
+    btop
     git
-    neovim
+    jq
+    openssl
     tmux
+    tree
   ];
 }

@@ -2,6 +2,9 @@
 {
   imports = [
     ./git.nix
-    ./zsh.nix
+    ./packages.nix
+    ./podman.nix
+    ./selfhosted
+    ./sops.nix
   ];
 }

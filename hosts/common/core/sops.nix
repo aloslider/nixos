@@ -10,7 +10,7 @@
     validateSopsFiles = false;
     secrets = {
       benq-password = {
-          neededForUsers = true;
+        neededForUsers = true;
       };
     };
   };

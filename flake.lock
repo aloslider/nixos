@@ -18,6 +18,22 @@
         "type": "github"
       }
     },
+    "dotfiles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778400209,
+        "narHash": "sha256-mEGIHZaTmQulmWLg3C8r0wdpEllFcKWeAt+3FLa4grM=",
+        "owner": "aloslider",
+        "repo": "dotfiles",
+        "rev": "e01f5de3b98f3c85997db571eeaef855bbda80a3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aloslider",
+        "repo": "dotfiles",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -89,6 +105,7 @@
     "root": {
       "inputs": {
         "disko": "disko",
+        "dotfiles": "dotfiles",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
         "sops-nix": "sops-nix"

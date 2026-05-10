@@ -1,7 +1,6 @@
 { config, ... }:
 {
-  programs.zsh = {
+  services.podman = {
     enable = true;
-    envExtra = "";
   };
 }

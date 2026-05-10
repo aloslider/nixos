@@ -1,8 +1,8 @@
 {
   config,
-  pkgs,
-  lib,
   inputs,
+  lib,
+  pkgs,
   ...
 }:
 {
@@ -11,6 +11,9 @@
   ];
 
   home-manager = {
+    extraSpecialArgs = {
+      inherit (inputs) disko dotfiles sops-nix;
+    };
     useGlobalPkgs = true;
     useUserPackages = true;
     users.benq =
@@ -22,15 +25,11 @@
               "home/benq/core"
             ]
             ++ (map (f: "home/benq/optional/${f}") [
+
             ])
           ))
         ];
 
-        home.packages = with pkgs; [
-          chezmoi
-          lazygit
-          lazydocker
-        ];
         home.stateVersion = "25.05";
       };
   };
