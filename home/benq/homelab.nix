@@ -22,9 +22,9 @@
         imports = lib.flatten [
           (map lib.custom.relativeToRoot (
             [
-              "home/benq/core"
+              "home/common/core"
             ]
-            ++ (map (f: "home/benq/optional/${f}") [
+            ++ (map (f: "home/common/optional/${f}") [
 
             ])
           ))

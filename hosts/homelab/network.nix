@@ -3,8 +3,8 @@
   networking = {
     hostName = "homelab";
     firewall = {
-      allowedTCPPorts = [ 22 80 443 6969 ];
-      allowedUDPPorts = [ 3478 ];
+      allowedTCPPorts = [ 22 80 443 2222 6969 ];
+      allowedUDPPorts = [ 3478 7359 ];
     };
   };
 

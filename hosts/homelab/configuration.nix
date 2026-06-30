@@ -19,7 +19,9 @@
         "bbr.nix"
         "endlessh.nix"
         "fail2ban.nix"
+        "fonts.nix"
         "openssh.nix"
+        "selfhosted"
       ])
     ))
   ];

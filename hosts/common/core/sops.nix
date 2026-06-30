@@ -8,10 +8,5 @@
     defaultSopsFile = "/etc/sops/secrets.yaml";
     age.keyFile = "/etc/age/key.txt";
     validateSopsFiles = false;
-    secrets = {
-      benq-password = {
-        neededForUsers = true;
-      };
-    };
   };
 }

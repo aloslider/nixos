@@ -6,6 +6,12 @@
 }:
 with lib;
 {
+  sops.secrets = {
+    benq-password = {
+      neededForUsers = true;
+    };
+  };
+
   users = {
     mutableUsers = false;
     users.benq = {
@@ -17,18 +23,29 @@ with lib;
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAeIuJzR68xA4ugJjtWbwvaWEU852Hg9FAAhXNw8ou43 benq"
       ];
       linger = true;
-      subUidRanges = [ { startUid = 100000; count = 65536; } ];
-      subGidRanges = [ { startGid = 100000; count = 65536; } ];
+      subUidRanges = [
+        {
+          startUid = 100000;
+          count = 65536;
+        }
+      ];
+      subGidRanges = [
+        {
+          startGid = 100000;
+          count = 65536;
+        }
+      ];
       extraGroups =
         let
-        ifTheyExist = groups: filter (group: hasAttr group config.users.groups) groups;
-      in
+          ifTheyExist = groups: filter (group: hasAttr group config.users.groups) groups;
+        in
         flatten [
-        "wheel"
+          "wheel"
           (ifTheyExist [
-           "git"
-           "networkmanager"
-           "video"
+            "docker"
+            "git"
+            "networkmanager"
+            "video"
           ])
         ];
     };
