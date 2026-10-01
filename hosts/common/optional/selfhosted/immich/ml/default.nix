@@ -2,8 +2,10 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.immich;
+  rootCfg = config.selfhosted.immich;
+  cfg = rootCfg.ml;
   hostDataPath = "${common.dataDir}/immich";
+  version = "v3.1.0";
 in
 {
   options.selfhosted.immich.ml = {
@@ -12,11 +14,11 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers."${cfg.ml.name}" = {
-      image = "ghcr.io/immich-app/immich-machine-learning:${cfg.version}";
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers."${cfg.name}" = {
+      image = "ghcr.io/immich-app/immich-machine-learning:${version}";
       environment = {
-        IMMICH_VERSION = cfg.version;
+        IMMICH_VERSION = version;
       };
       volumes = [
         "${hostDataPath}/cache:/cache"
@@ -26,14 +28,14 @@ in
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.ml.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [ "${common.backend}-network-${common.network.name}.service" ];
-      requires = [ "${common.backend}-network-${common.network.name}.service" ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      requires = [ "${common.backend}-${rootCfg.server.name}.service" ];
+      after = [ "${common.backend}-${rootCfg.server.name}.service" ];
       preStart = ''
         mkdir -p ${hostDataPath}/cache
       '';

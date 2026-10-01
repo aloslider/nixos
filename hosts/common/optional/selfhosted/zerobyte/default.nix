@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, ... }:
 with lib;
 let
   common = config.selfhosted.common;
@@ -14,23 +9,24 @@ in
   imports = [ ./config.nix ];
 
   options.selfhosted.zerobyte = {
+    enable = mkEnableOption "Enable ${cfg.targetName}";
     name = mkOption {
       type = types.str;
     };
     subdomain = mkOption {
       type = types.str;
     };
-    hostPort = mkOption {
+    hostHttpPort = mkOption {
       type = types.port;
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "ghcr.io/nicotsx/zerobyte:latest";
+      image = "ghcr.io/nicotsx/zerobyte:v0.41";
       environmentFiles = [ config.sops.templates."zerobyte.env".path ];
       ports = [
-        "0.0.0.0:${toString cfg.hostPort}:4096"
+        "0.0.0.0:${toString cfg.hostHttpPort}:4096"
       ];
       volumes = [
         "/etc/localtime:/etc/localtime:ro"
@@ -43,16 +39,9 @@ in
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      requires = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
       wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      after = [ "${common.backend}-${common.rootTarget.name}.target" ];
       preStart = ''
         mkdir -p ${hostDataPath}/{data,backups}
       '';

@@ -2,7 +2,8 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.seafile;
+  rootCfg = config.selfhosted.seafile;
+  cfg = rootCfg.server;
   hostDataPath = "${common.dataDir}/seafile";
 in
 {
@@ -20,11 +21,11 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers.${cfg.server.name} = {
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers.${cfg.name} = {
       image = "docker.io/seafileltd/seafile-mc:13.0-latest";
       ports = [
-        "0.0.0.0:${toString cfg.server.hostHttpPort}:80"
+        "0.0.0.0:${toString cfg.hostHttpPort}:80"
       ];
       environmentFiles = [ config.sops.templates."seafile.env".path ];
       volumes = [
@@ -36,24 +37,20 @@ in
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.server.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-        "${common.backend}-${config.selfhosted.seafile.mariadb.name}.service"
-        "${common.backend}-${config.selfhosted.seafile.redis.name}.service"
-      ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
       requires = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-        "${common.backend}-${cfg.mariadb.name}.service"
-        "${common.backend}-${cfg.redis.name}.service"
+        "${common.backend}-${rootCfg.mariadb.name}.service"
+        "${common.backend}-${rootCfg.redis.name}.service"
       ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      after = [
+        "${common.backend}-${rootCfg.mariadb.name}.service"
+        "${common.backend}-${rootCfg.redis.name}.service"
+      ];
       preStart = ''
         mkdir -p ${hostDataPath}/server/shared/seafile/conf
 

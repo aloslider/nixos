@@ -1,19 +1,15 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, ... }:
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.traefik;
+  rootCfg = config.selfhosted.netbird;
+  cfg = rootCfg.traefik;
   hostDataPath = "${common.dataDir}/traefik";
 in
 {
   imports = [ ./config.nix ];
 
-  options.selfhosted.traefik = {
+  options.selfhosted.netbird.traefik = {
     name = mkOption {
       type = types.str;
     };
@@ -22,14 +18,9 @@ in
     };
   };
 
-  config = {
-    sops.secrets = {
-      "domains/serv" = { };
-      "letsEncrypt/email" = { };
-    };
-
+  config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "traefik:latest";
+      image = "docker.io/traefik:v3.7.4";
       environmentFiles = [ config.sops.templates."traefik.env".path ];
       volumes = [
         "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -58,10 +49,8 @@ in
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [ "${common.backend}-network-${common.network.name}.service" ];
-      requires = [ "${common.backend}-network-${common.network.name}.service" ];
-      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
-      wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
       preStart = ''
         mkdir -p ${hostDataPath}/letsencrypt
         chown -R ${common.user.uid}:${common.group.gid} ${hostDataPath}

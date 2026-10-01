@@ -15,10 +15,13 @@ in
     ./homarr
     ./immich
     ./jellyfin
+    ./mihomo
+    ./mirotalk
+    ./monitoring
     ./netbird
     ./pocket-id
     ./seafile
-    ./traefik
+    ./stalwart
     ./vaultwarden
     ./zapret2
     ./zerobyte
@@ -90,30 +93,36 @@ in
         };
       };
       jellyfin = {
-        name = "jellyfin";
-        subdomain = "media";
-        hostHttpPort = 5040;
-        hostUdpPort = 5041;
+        enable = false;
+        targetName = "jellyfin";
+        server = {
+          name = "jellyfin-server";
+          subdomain = "media";
+          hostHttpPort = 5040;
+          hostUdpPort = 5041;
+        };
       };
       gitea = {
+        enable = true;
         targetName = "gitea";
-        gitea = {
-          name = "gitea";
+        server = {
+          name = "gitea-server";
           subdomain = "gitea";
           hostWebPort = 5060;
           hostSshPort = 5061;
+          maxRepoLimit = 50;
         };
         postgresql = {
           name = "gitea-db";
         };
       };
       immich = {
+        enable = true;
         targetName = "immich";
-        version = "v2";
-        immich = {
-          name = "immich";
-          subdomain = "photos";
-          hostPort = 5090;
+        subdomain = "photos";
+        server = {
+          name = "immich-server";
+          hostHttpPort = 5090;
         };
         ml = {
           name = "immich-ml";
@@ -127,69 +136,162 @@ in
           user = "immich";
         };
       };
+      mihomo = {
+        enable = false;
+        targetName = "mihomo";
+        dashboard = {
+          name = "mihomo-zashboard";
+          subdomain = "zash";
+          hostHttpPort = 6020;
+        };
+        core = {
+          name = "mihomo-core";
+          hostMixedPort = 6021;
+          hostApiPort = 6022;
+        };
+      };
+      mirotalk = {
+        enable = false;
+        targetName = "mirotalk";
+        server = {
+          name = "mirotalk-server";
+          subdomain = "meet";
+          hostHttpPort = 6030;
+        };
+      };
       netbird = {
+        enable = true;
         targetName = "netbird";
         subdomain = "nb";
         dashboard = {
-          name = "nb-dashboard";
+          name = "netbird-dashboard";
         };
         proxy = {
-          name = "nb-proxy";
+          name = "netbird-proxy";
         };
         server = {
-          name = "nb-server";
+          name = "netbird-server";
+        };
+        traefik = {
+          name = "netbird-traefik";
+          ip = "172.30.0.10";
         };
       };
       homarr = {
-        name = "homarr";
-        subdomain = "dash";
-        hostPort = 5030;
+        enable = true;
+        targetName = "homarr";
+        server = {
+          name = "homarr-server";
+          subdomain = "dash";
+          hostHttpPort = 5030;
+        };
+      };
+      monitoring = {
+        enable = true;
+        targetName = "monitor";
+        grafana = {
+          name = "monitor-grafana";
+          subdomain = "grafana";
+          hostHttpPort = 5100;
+        };
+        prometheus = {
+          name = "monitor-prometheus";
+        };
+        nodeExporter = {
+          name = "monitor-node-exporter";
+        };
       };
       pocket-id = {
-        name = "pocket-id";
+        enable = true;
+        targetName = "pocket-id";
         subdomain = "id";
-        hostPort = 5020;
+        server = {
+          name = "pocket-id-server";
+          hostHttpPort = 5020;
+        };
       };
       seafile = {
+        enable = true;
         targetName = "seafile";
         server = {
-          name = "sf-server";
+          name = "seafile-server";
           subdomain = "cloud";
           hostHttpPort = 5050;
         };
         mariadb = {
-          name = "sf-db";
+          name = "seafile-db";
         };
         redis = {
-          name = "sf-cache";
+          name = "seafile-cache";
         };
         seadoc = {
-          name = "sf-seadoc";
+          name = "seafile-seadoc";
           hostHttpPort = 5051;
         };
         notification = {
-          name = "sf-notification";
+          name = "seafile-notification";
           hostHttpPort = 5052;
         };
+        collabora = {
+          name = "seafile-collabora";
+          subdomain = "office";
+          hostHttpPort = 5053;
+        };
+        thumbnail = {
+          name = "seafile-thumbnail";
+          hostHttpPort = 5054;
+        };
       };
-      traefik = {
-        name = "traefik";
-        ip = "172.30.0.10";
+      mail = {
+        enable = true;
+        targetName = "mail";
+        hostPorts =
+          let
+            cfg = config.selfhosted.mail.stalwart;
+          in
+          [
+            cfg.hostImapsPort
+            cfg.hostManageSievePort
+            cfg.hostSmtpPort
+            cfg.hostSmtpsPort
+            cfg.hostSubmissionPort
+          ];
+        bulwark = {
+          name = "mail-bulwark";
+          subdomain = "mail";
+          hostHttpPort = 5087;
+        };
+        stalwart = {
+          name = "mail-server";
+          subdomain = "webmail";
+          hostHttpPort = 5080;
+          hostImapsPort = 993;
+          hostManageSievePort = 4190;
+          hostSmtpPort = 25;
+          hostSmtpsPort = 465;
+          hostSubmissionPort = 587;
+        };
       };
       vaultwarden = {
-        name = "vaultwarden";
-        subdomain = "vault";
-        hostPort = 5010;
+        enable = true;
+        targetName = "vaultwarden";
+        server = {
+          name = "vaultwarden-server";
+          subdomain = "vault";
+          hostHttpPort = 5010;
+        };
       };
       zapret2 = {
+        enable = false;
         name = "zapret2";
         socksPort = 6000;
         ssPort = 6001;
       };
       zerobyte = {
+        enable = true;
         name = "zerobyte";
         subdomain = "backup";
-        hostPort = 5070;
+        hostHttpPort = 5070;
       };
     };
 
@@ -235,7 +337,6 @@ in
       NB_MANAGEMENT_URL=https://${cfg.netbird.subdomain}.${config.sops.placeholder."domains/serv"}
     '';
 
-    # Override to pass env file
     systemd.services = {
       "netbird-homelab" = {
         serviceConfig = {
@@ -250,26 +351,37 @@ in
       };
     };
 
-    systemd.targets."${common.backend}-${common.rootTarget.name}" = {
-      unitConfig = {
-        Description = "Root target for homelab stack";
-      };
-      wantedBy = [ "multi-user.target" ];
-    };
-
     systemd.services."${common.backend}-network-${common.network.name}" = {
-      path = [ pkgs.${common.backend} ];
+      unitConfig = {
+        Description = "Common network for selfhosted services stack";
+      };
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStop = "${common.backend} network rm -f ${common.network.name}";
       };
+      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      path = [ pkgs.${common.backend} ];
       script = ''
         ${common.backend} network inspect ${common.network.name} \
         || ${common.backend} network create ${common.network.name} --driver=bridge --subnet=${common.network.address}/${common.network.mask} --gateway=${common.network.gateway}
       '';
-      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
-      wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+    };
+
+    systemd.targets."${common.backend}-${common.rootTarget.name}" = {
+      unitConfig = {
+        Description = "Root target for homelab stack";
+      };
+      wantedBy = [ "multi-user.target" ];
+      requires = [
+        "${common.backend}-network-${common.network.name}.service" # wait for network creation
+        "${common.backend}-${config.selfhosted.netbird.traefik.name}.service"
+      ];
+      after = [
+        "${common.backend}-network-${common.network.name}.service"
+        "${common.backend}-${config.selfhosted.netbird.traefik.name}.service"
+      ];
     };
 
     networking.firewall.interfaces = lib.mkMerge [

@@ -2,7 +2,8 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.seafile;
+  rootCfg = config.selfhosted.seafile;
+  cfg = rootCfg.mariadb;
   hostDataPath = "${common.dataDir}/seafile";
 in
 {
@@ -14,8 +15,8 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers.${cfg.mariadb.name} = {
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers.${cfg.name} = {
       image = "docker.io/mariadb:10.11";
       environmentFiles = [ config.sops.templates."seafile-db.env".path ];
       volumes = [
@@ -32,14 +33,12 @@ in
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.mariadb.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [ "${common.backend}-network-${common.network.name}.service" ];
-      requires = [ "${common.backend}-network-${common.network.name}.service" ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
       preStart = ''
         mkdir -p ${hostDataPath}/mysql
       '';

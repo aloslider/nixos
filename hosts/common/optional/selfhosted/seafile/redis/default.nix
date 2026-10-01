@@ -2,7 +2,8 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.seafile;
+  rootCfg = config.selfhosted.seafile;
+  cfg = rootCfg.redis;
 in
 {
   imports = [ ./config.nix ];
@@ -13,8 +14,8 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers.${cfg.redis.name} = {
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers.${cfg.name} = {
       image = "docker.io/redis:7";
       environmentFiles = [ config.sops.templates."seafile-redis.env".path ];
       cmd = [ "/bin/sh" "-c" "exec redis-server --requirepass \"$REDIS_PASSWORD\"" ];
@@ -24,14 +25,12 @@ in
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.redis.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [ "${common.backend}-network-${common.network.name}.service" ];
-      requires = [ "${common.backend}-network-${common.network.name}.service" ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
     };
   };
 }

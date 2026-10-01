@@ -2,7 +2,8 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.netbird;
+  rootCfg = config.selfhosted.netbird;
+  cfg = config.selfhosted.netbird.proxy;
   hostDataPath = "${common.dataDir}/netbird/proxy";
 in
 {
@@ -14,42 +15,35 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers.${cfg.proxy.name} = {
-      image = "netbirdio/reverse-proxy:latest";
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers.${cfg.name} = {
+      image = "docker.io/netbirdio/reverse-proxy:0.77.0";
       environmentFiles = [ config.sops.templates."nb-proxy.env".path ];
       volumes = [
         "${hostDataPath}/certs:/certs:rw"
       ];
       ports = [
-        "0.0.0.0:2222:2222/tcp" # gitea
-        "0.0.0.0:7359:7359/udp" # jelly
-        "0.0.0.0:51820:51820/udp"
+        "0.0.0.0:2222:2222/tcp"   # gitea
+        "0.0.0.0:7359:7359/udp"   # jelly
+        "0.0.0.0:51820:51820/udp" # netbird stunt
+        # "0.0.0.0:9090:9090/tcp"   # mihomo controller
       ];
-      dependsOn = [ cfg.server.name ];
+      dependsOn = [ rootCfg.server.name ];
       log-driver = "journald";
       extraOptions = [
-        "--network-alias=${cfg.proxy.name}"
+        "--network-alias=${cfg.name}"
         "--network=${common.network.name}"
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.proxy.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${cfg.server.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      requires = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${cfg.server.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      requires = [ "${common.backend}-${rootCfg.server.name}.service" ];
+      after = [ "${common.backend}-${rootCfg.server.name}.service" ];
       preStart = ''
         mkdir -p ${hostDataPath}/certs
         chown -R ${common.user.uid}:${common.group.gid} ${hostDataPath}

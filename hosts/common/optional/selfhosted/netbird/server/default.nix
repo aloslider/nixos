@@ -2,7 +2,8 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.netbird;
+  rootCfg = config.selfhosted.netbird;
+  cfg = rootCfg.server;
   hostDataPath = "${common.dataDir}/netbird/server";
 in
 {
@@ -14,9 +15,9 @@ in
     };
   };
 
-  config = {
-    virtualisation.oci-containers.containers.${cfg.server.name} = {
-      image = "netbirdio/netbird-server:latest";
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers.${cfg.name} = {
+      image = "docker.io/netbirdio/netbird-server:0.77.0";
       volumes = [
         "${config.sops.templates."nb-server.yaml".path}:/etc/netbird/config.yaml:rw"
         "${hostDataPath}/data:/var/lib/netbird:rw"
@@ -30,25 +31,19 @@ in
       ];
       log-driver = "journald";
       extraOptions = [
-        "--network-alias=${cfg.server.name}"
+        "--network-alias=${cfg.name}"
         "--network=${common.network.name}"
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.server.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      requires = [
-        "${common.backend}-network-${common.network.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      requires = [ "${common.backend}-${rootCfg.traefik.name}.service" ];
+      after = [ "${common.backend}-${rootCfg.traefik.name}.service" ];
       preStart = ''
         mkdir -p ${hostDataPath}/data
         chown -R ${common.user.uid}:${common.group.gid} ${hostDataPath}

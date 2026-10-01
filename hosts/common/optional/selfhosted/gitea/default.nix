@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, ... }:
 with lib;
 let
   common = config.selfhosted.common;
@@ -11,17 +6,18 @@ let
 in
 {
   imports = [
-    ./gitea
     ./postgresql
+    ./server
   ];
 
   options.selfhosted.gitea = {
+    enable = mkEnableOption "Enable ${cfg.targetName} root target";
     targetName = mkOption {
       type = types.str;
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     sops.secrets = {
       "gitea/db_password" = { };
       "gitea/client_id" = { };
@@ -33,6 +29,8 @@ in
         Description = "Root target for ${cfg.targetName}";
       };
       wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      after = [ "${common.backend}-${common.rootTarget.name}.target" ];
     };
   };
 }

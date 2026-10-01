@@ -3,8 +3,21 @@
   networking = {
     hostName = "homelab";
     firewall = {
-      allowedTCPPorts = [ 22 80 443 2222 6969 ];
-      allowedUDPPorts = [ 3478 7359 ];
+      allowedTCPPorts = [
+        22
+        80
+        443
+        2222
+        6969
+      ]
+      ++ [
+        config.selfhosted.mihomo.core.hostApiPort
+      ]
+      ++ config.selfhosted.mail.hostPorts;
+      allowedUDPPorts = [
+        3478
+        7359
+      ];
     };
   };
 

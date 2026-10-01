@@ -7,13 +7,14 @@
 with lib;
 let
   common = config.selfhosted.common;
-  cfg = config.selfhosted.gitea;
+  rootCfg = config.selfhosted.gitea;
+  cfg = rootCfg.server;
   hostDataPath = "${common.dataDir}/gitea";
 in
 {
   imports = [ ./config.nix ];
 
-  options.selfhosted.gitea.gitea = {
+  options.selfhosted.gitea.server = {
     name = mkOption {
       type = types.str;
     };
@@ -26,14 +27,17 @@ in
     hostSshPort = mkOption {
       type = types.port;
     };
+    maxRepoLimit = mkOption {
+      type = types.ints.positive;
+    };
   };
 
-  config = {
-    virtualisation.oci-containers.containers."${cfg.gitea.name}" = {
-      image = "gitea/gitea:latest";
+  config = mkIf rootCfg.enable {
+    virtualisation.oci-containers.containers."${cfg.name}" = {
+      image = "gitea/gitea:1.27.2";
       ports = [
-        "0.0.0.0:${toString cfg.gitea.hostWebPort}:3000"
-        "0.0.0.0:${toString cfg.gitea.hostSshPort}:2222"
+        "0.0.0.0:${toString cfg.hostWebPort}:3000"
+        "0.0.0.0:${toString cfg.hostSshPort}:2222"
       ];
       environmentFiles = [ config.sops.templates."gitea.env".path ];
       volumes = [
@@ -45,20 +49,14 @@ in
       ];
     };
 
-    systemd.services."${common.backend}-${cfg.gitea.name}" = {
+    systemd.services."${common.backend}-${cfg.name}" = {
       serviceConfig = {
         Restart = lib.mkOverride 90 "always";
       };
-      after = [
-        "${common.backend}-${cfg.postgresql.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      requires = [ 
-        "${common.backend}-${cfg.postgresql.name}.service"
-        "${common.backend}-${config.selfhosted.traefik.name}.service"
-      ];
-      partOf = [ "${common.backend}-${cfg.targetName}.target" ];
-      wantedBy = [ "${common.backend}-${cfg.targetName}.target" ];
+      wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      requires = [ "${common.backend}-${rootCfg.postgresql.name}.service" ];
+      after = [ "${common.backend}-${rootCfg.postgresql.name}.service" ];
       preStart = ''
         mkdir -p ${hostDataPath}/data
         chown -R ${common.user.uid}:${common.group.gid} ${hostDataPath}/data
@@ -81,20 +79,20 @@ in
           CLIENT_SECRET=$(cat ${config.sops.secrets."gitea/client_secret".path})
 
           for i in $(seq 1 30); do
-            if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString cfg.gitea.hostWebPort}/api/v1/version >/dev/null 2>&1; then
+            if ${pkgs.curl}/bin/curl -sf http://127.0.0.1:${toString cfg.hostWebPort}/api/v1/version >/dev/null 2>&1; then
               break
             fi
             echo "Waiting for Gitea to be ready... ($i/20)"
             sleep 5
           done
 
-          if ${engine}/bin/${common.backend} exec --user ${common.user.uid} ${cfg.gitea.name} \
+          if ${engine}/bin/${common.backend} exec --user ${common.user.uid} ${cfg.name} \
               gitea admin auth list 2>/dev/null | grep -q 'PocketID'; then
             echo "PocketID auth source already registered"
             exit 0
           fi
 
-          ${engine}/bin/${common.backend} exec --user ${common.user.uid} ${cfg.gitea.name} \
+          ${engine}/bin/${common.backend} exec --user ${common.user.uid} ${cfg.name} \
             gitea admin auth add-oauth \
               --name "PocketID" \
               --provider "openidConnect" \

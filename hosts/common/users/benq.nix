@@ -21,6 +21,7 @@ with lib;
       hashedPasswordFile = config.sops.secrets.benq-password.path;
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAeIuJzR68xA4ugJjtWbwvaWEU852Hg9FAAhXNw8ou43 benq"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA6bNiLryTwQBHDSDY23oqMpkD37R1Rfw6TqVpfKzQBI phone"
       ];
       linger = true;
       subUidRanges = [

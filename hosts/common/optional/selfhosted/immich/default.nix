@@ -6,22 +6,23 @@ let
 in
 {
   imports = [
-    ./immich
     ./ml
     ./postgresql
     ./redis
+    ./server
   ];
 
   options.selfhosted.immich = {
+    enable = mkEnableOption "Enable ${cfg.targetName} root target";
     targetName = mkOption {
       type = types.str;
     };
-    version = mkOption {
+    subdomain = mkOption {
       type = types.str;
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     sops.secrets = {
       "immich/db_password" = { };
       "immich/client_id" = { };
@@ -33,6 +34,8 @@ in
         Description = "Root target for ${cfg.targetName}";
       };
       wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      after = [ "${common.backend}-${common.rootTarget.name}.target" ];
     };
   };
 }

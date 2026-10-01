@@ -1,11 +1,14 @@
-{ config, ... }:
+{ config, lib, ... }:
+with lib;
 let
-  cfg = config.selfhosted.gitea;
+  rootCfg = config.selfhosted.gitea;
 in
 {
-  sops.templates."gitea-db.env".content = ''
-    POSTGRES_DB=gitea
-    POSTGRES_USER=gitea
-    POSTGRES_PASSWORD=${config.sops.placeholder."gitea/db_password"}
-  '';
+  config = mkIf rootCfg.enable {
+    sops.templates."gitea-db.env".content = ''
+      POSTGRES_DB=gitea
+      POSTGRES_USER=gitea
+      POSTGRES_PASSWORD=${config.sops.placeholder."gitea/db_password"}
+    '';
+  };
 }

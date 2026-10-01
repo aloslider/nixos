@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, ... }:
 with lib;
 let
   common = config.selfhosted.common;
@@ -14,9 +9,11 @@ in
     ./dashboard
     ./proxy
     ./server
+    ./traefik
   ];
 
   options.selfhosted.netbird = {
+    enable = mkEnableOption "Enable ${cfg.targetName} root target";
     targetName = mkOption {
       type = types.str;
     };
@@ -25,19 +22,22 @@ in
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     sops.secrets = {
+      "domains/serv" = { };
+      "letsEncrypt/email" = { };
       "netbird/proxy/token" = { };
+      "netbird/server/auth_secret" = { };
+      "netbird/server/enc_key" = { };
     };
 
     systemd.targets."${common.backend}-${cfg.targetName}" = {
       unitConfig = {
         Description = "Root target for ${cfg.targetName}";
       };
-      after = [ "${common.backend}-network-${common.network.name}.service" ];
-      requires = [ "${common.backend}-network-${common.network.name}.service" ];
-      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
       wantedBy = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      partOf = [ "${common.backend}-${common.rootTarget.name}.target" ];
+      after = [ "${common.backend}-network-${common.rootTarget.name}.service" ];
     };
   };
 }

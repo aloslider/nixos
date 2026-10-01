@@ -1,6 +1,12 @@
-{ config, ... }:
+{ config, lib, ... }:
+with lib;
+let
+  rootCfg = config.selfhosted.immich;
+in
 {
-  sops.templates."immich-db.env".content = ''
-    POSTGRES_PASSWORD=${config.sops.placeholder."immich/db_password"}
-  '';
+  config = mkIf rootCfg.enable {
+    sops.templates."immich-db.env".content = ''
+      POSTGRES_PASSWORD=${config.sops.placeholder."immich/db_password"}
+    '';
+  };
 }
