@@ -27,7 +27,7 @@ in
       OIDC_AUTH_LOGOUT=true
       SESSION_SECRET=${config.sops.placeholder."mirotalk/session_secret"}
 
-      HOST_PROTECTED=true
+      HOST_PROTECTED=false
       HOST_USER_AUTH=false
       HOST_USERS='[]'
 
@@ -35,8 +35,12 @@ in
 
       STUN_SERVER_ENABLED=true
       STUN_SERVER_URL=${stunUrl}
-      TURN_SERVER_ENABLED=false
+      TURN_SERVER_ENABLED=true
+      TURN_SERVER_URL=turn:${config.selfhosted.netbird.subdomain}.${domain}:${toString config.selfhosted.turn.listenPort}
+      TURN_SERVER_USERNAME=turn
+      TURN_SERVER_CREDENTIAL=${config.sops.placeholder."turn/password"}
 
+      SHOW_ACTIVE_ROOMS=true
       STATS_ENABLED=false
       SURVEY_ENABLED=false
     '';

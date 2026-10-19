@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   networking = {
     hostName = "homelab";
@@ -17,6 +17,16 @@
       allowedUDPPorts = [
         3478
         7359
+        51820
+      ]
+      ++ lib.optionals config.selfhosted.turn.enable [
+        config.selfhosted.turn.listenPort
+      ];
+      allowedUDPPortRanges = lib.optionals config.selfhosted.turn.enable [
+        {
+          from = config.selfhosted.turn.minPort;
+          to = config.selfhosted.turn.maxPort;
+        }
       ];
     };
   };

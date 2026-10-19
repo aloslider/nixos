@@ -22,8 +22,7 @@ in
 
   config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers."${cfg.name}" = {
-      # Docker Hub only publishes `latest`; this digest is MiroTalk P2P 1.9.39 (2026-09-03).
-      image = "docker.io/mirotalk/p2p@sha256:c05675e2e3e8a2bb1ee63f07dcaaf8523a30b4dee4d1e594594ff5e36c959b07";
+      image = "docker.io/mirotalk/p2p@sha256:c05675e2e3e8a2bb1ee63f07dcaaf8523a30b4dee4d1e594594ff5e36c959b07"; # 1.9.39 (2026-09-03)
       ports = [
         "0.0.0.0:${toString cfg.hostHttpPort}:3000"
       ];
@@ -44,6 +43,9 @@ in
       };
       wantedBy = [ "${common.backend}-${rootCfg.targetName}.target" ];
       partOf = [ "${common.backend}-${rootCfg.targetName}.target" ];
+      after = lib.optionals config.selfhosted.turn.enable [
+        "${common.backend}-${config.selfhosted.turn.name}.service"
+      ];
     };
   };
 }

@@ -22,6 +22,7 @@ in
     ./pocket-id
     ./seafile
     ./stalwart
+    ./turn
     ./vaultwarden
     ./zapret2
     ./zerobyte
@@ -151,13 +152,20 @@ in
         };
       };
       mirotalk = {
-        enable = false;
+        enable = true;
         targetName = "mirotalk";
         server = {
           name = "mirotalk-server";
           subdomain = "meet";
-          hostHttpPort = 6030;
+          hostHttpPort = 5110;
         };
+      };
+      turn = {
+        enable = true;
+        name = "turn-server";
+        listenPort = 3479;
+        minPort = 49160;
+        maxPort = 49200;
       };
       netbird = {
         enable = true;
