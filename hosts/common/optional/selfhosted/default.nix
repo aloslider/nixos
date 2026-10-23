@@ -163,6 +163,7 @@ in
       turn = {
         enable = true;
         name = "turn-server";
+        listenIP = "172.30.0.28";
         listenPort = 3479;
         minPort = 49160;
         maxPort = 49200;

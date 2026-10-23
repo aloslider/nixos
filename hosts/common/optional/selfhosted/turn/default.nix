@@ -12,6 +12,9 @@ in
     name = mkOption {
       type = types.str;
     };
+    listenIP = mkOption {
+      type = types.str;
+    };
     listenPort = mkOption {
       type = types.port;
     };
@@ -27,14 +30,16 @@ in
     virtualisation.oci-containers.containers.${cfg.name} = {
       image = "docker.io/coturn/coturn:4.6.3";
       cmd = [ "-c" "/etc/turnserver.conf" ];
-      ports =
-        [ "0.0.0.0:${toString cfg.listenPort}:${toString cfg.listenPort}/udp" ]
-        ++ map (port: "0.0.0.0:${toString port}:${toString port}/udp") (
-          range cfg.minPort cfg.maxPort
-        );
+      ports = [ 
+          "0.0.0.0:${toString cfg.listenPort}:${toString cfg.listenPort}/udp"
+        ]
+        ++ map (port: "0.0.0.0:${toString port}:${toString port}/udp") (range cfg.minPort cfg.maxPort);
       volumes = [ "${config.sops.templates."turnserver.conf".path}:/etc/turnserver.conf:ro" ];
       log-driver = "journald";
-      extraOptions = [ "--network=${common.network.name}" ];
+      extraOptions = [ 
+        "--network=${common.network.name}"
+        "--ip=172.30.0.28"
+      ];
     };
 
     systemd.services."${common.backend}-${cfg.name}" = {
