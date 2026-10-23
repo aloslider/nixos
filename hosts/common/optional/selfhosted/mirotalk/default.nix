@@ -19,6 +19,7 @@ in
       "mirotalk/client_secret" = { };
       "mirotalk/session_secret" = { };
       "mirotalk/api_key_secret" = { };
+      "mirotalk/jwt_secret" = { };
     };
 
     systemd.targets."${common.backend}-${cfg.targetName}" = {

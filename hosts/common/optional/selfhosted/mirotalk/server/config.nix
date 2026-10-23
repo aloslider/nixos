@@ -6,43 +6,40 @@ let
   domain = "${config.sops.placeholder."domains/serv"}";
   pocketIdSubdomain = config.selfhosted.pocket-id.subdomain;
   publicUrl = "https://${cfg.subdomain}.${domain}";
-  stunUrl = "stun:${config.selfhosted.netbird.subdomain}.${domain}:3478";
 in
 {
   config = mkIf rootCfg.enable {
     sops.templates."mirotalk.env".content = ''
       NODE_ENV=production
       TZ=${config.time.timeZone}
-      PORT=3000
+      SERVER_LISTEN_PORT=3010
+      SERVER_HOST_URL=${publicUrl}
       TRUST_PROXY=true
+
+      SFU_LISTEN_IP=0.0.0.0
+      SFU_ANNOUNCED_IP=${config.sops.placeholder."turn/public-ip"}
+      SFU_MIN_PORT=${toString cfg.minPort}
+      SFU_MAX_PORT=${toString cfg.maxPort}
+      SFU_NUM_WORKERS=4
+      SFU_SERVER=false
 
       OIDC_ENABLED=true
       OIDC_ALLOW_ROOMS_CREATION_FOR_AUTH_USERS=true
       OIDC_BASE_URL_DYNAMIC=false
-      OIDC_ISSUER_BASE_URL=https://${pocketIdSubdomain}.${domain}
+      OIDC_ISSUER=https://${pocketIdSubdomain}.${domain}
       OIDC_BASE_URL=${publicUrl}
       OIDC_CLIENT_ID=mirotalk
       OIDC_CLIENT_SECRET=${config.sops.placeholder."mirotalk/client_secret"}
+      OIDC_SECRET=${config.sops.placeholder."mirotalk/session_secret"}
       OIDC_AUTH_REQUIRED=false
       OIDC_AUTH_LOGOUT=true
-      SESSION_SECRET=${config.sops.placeholder."mirotalk/session_secret"}
 
-      HOST_PROTECTED=false
-      HOST_USER_AUTH=false
-      HOST_USERS='[]'
+      JWT_SECRET=${config.sops.placeholder."mirotalk/jwt_secret"}
+      JWT_EXPIRATION=1h
 
       API_KEY_SECRET=${config.sops.placeholder."mirotalk/api_key_secret"}
 
-      STUN_SERVER_ENABLED=true
-      STUN_SERVER_URL=${stunUrl}
-      TURN_SERVER_ENABLED=true
-      TURN_SERVER_URL=turn:${config.selfhosted.netbird.subdomain}.${domain}:${toString config.selfhosted.turn.listenPort}
-      TURN_SERVER_USERNAME=turn
-      TURN_SERVER_CREDENTIAL=${config.sops.placeholder."turn/password"}
-
       SHOW_ACTIVE_ROOMS=true
-      STATS_ENABLED=false
-      SURVEY_ENABLED=false
     '';
   };
 }

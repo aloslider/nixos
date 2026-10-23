@@ -24,7 +24,7 @@ in
       SSO_CLIENT_SECRET=${config.sops.placeholder."vaultwarden/client_secret"}
       SSO_AUTH_ONLY_NOT_SESSION=true
 
-      # SMTP via Stalwart
+      # SMTP
       SMTP_HOST=${mailCfg.subdomain}.${domain}
       SMTP_FROM=${smtpUser}
       SMTP_FROM_NAME=Vaultwarden

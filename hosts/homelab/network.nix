@@ -22,10 +22,22 @@
       ++ lib.optionals config.selfhosted.turn.enable [
         config.selfhosted.turn.listenPort
       ];
+      allowedTCPPortRanges = lib.optionals config.selfhosted.mirotalk.enable [
+        {
+          from = config.selfhosted.mirotalk.server.minPort;
+          to = config.selfhosted.mirotalk.server.maxPort;
+        }
+      ];
       allowedUDPPortRanges = lib.optionals config.selfhosted.turn.enable [
         {
           from = config.selfhosted.turn.minPort;
           to = config.selfhosted.turn.maxPort;
+        }
+      ]
+      ++ lib.optionals config.selfhosted.mirotalk.enable [
+        {
+          from = config.selfhosted.mirotalk.server.minPort;
+          to = config.selfhosted.mirotalk.server.maxPort;
         }
       ];
     };

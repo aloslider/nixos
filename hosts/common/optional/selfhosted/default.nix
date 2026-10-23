@@ -158,6 +158,8 @@ in
           name = "mirotalk-server";
           subdomain = "meet";
           hostHttpPort = 5110;
+          minPort = 40000;
+          maxPort = 40100;
         };
       };
       turn = {
