@@ -16,7 +16,7 @@ in
 
   config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "docker.io/netbirdio/dashboard:v2.91.1";
+      image = "docker.io/netbirdio/dashboard:v2.95.0";
       environmentFiles = [ config.sops.templates."nb-dashboard.env".path ];
       log-driver = "journald";
       extraOptions = [

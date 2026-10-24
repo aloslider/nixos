@@ -35,6 +35,8 @@ in
         reverseProxy:
           trustedHTTPProxies:
             - "${rootCfg.traefik.ip}/32"
+          trustedPeers:
+            - "${rootCfg.traefik.ip}/32"
     '';
   };
 }

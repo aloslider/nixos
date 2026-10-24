@@ -17,7 +17,7 @@ in
 
   config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "docker.io/netbirdio/reverse-proxy:0.77.0";
+      image = "docker.io/netbirdio/reverse-proxy:0.81.3";
       environmentFiles = [ config.sops.templates."nb-proxy.env".path ];
       volumes = [
         "${hostDataPath}/certs:/certs:rw"

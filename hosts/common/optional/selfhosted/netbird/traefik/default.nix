@@ -20,7 +20,7 @@ in
 
   config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "docker.io/traefik:v3.7.4";
+      image = "docker.io/traefik:v3.7.14";
       environmentFiles = [ config.sops.templates."traefik.env".path ];
       volumes = [
         "/var/run/docker.sock:/var/run/docker.sock:ro"

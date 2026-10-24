@@ -17,7 +17,7 @@ in
 
   config = mkIf rootCfg.enable {
     virtualisation.oci-containers.containers.${cfg.name} = {
-      image = "docker.io/netbirdio/netbird-server:0.77.0";
+      image = "docker.io/netbirdio/netbird-server:0.81.3";
       volumes = [
         "${config.sops.templates."nb-server.yaml".path}:/etc/netbird/config.yaml:rw"
         "${hostDataPath}/data:/var/lib/netbird:rw"
